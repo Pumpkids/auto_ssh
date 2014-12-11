@@ -1,0 +1,34 @@
+#!/usr/bin/expect
+
+#################
+#	Auto-ssh pour les feignasses
+#	1- créer un fichier secrets avec les logins (login "espace" pwd), un par ligne
+#	2- Crypter le fichier avec la commande gpg --encrypt --output secrets.gpg -r "user" secrets
+#	3- Supprimer le fichier secrets en clair
+################
+
+#trap sigwinch and pass it to the child we spawned
+trap {
+ set rows [stty rows]
+ set cols [stty columns]
+ stty rows $rows columns $cols < $spawn_out(slave,name)
+} WINCH
+
+set timeout -1
+set HomeDir $env(HOME)
+set Secrets "$HomeDir/scripts/secrets.gpg"
+
+set IP [lindex $argv 0 ]
+
+set CLARAPASS [ exec gpg -o - -d /home/fooker/scripts/secrets.gpg 2> /dev/null | grep claranet | awk "{print \$2}" ]
+
+spawn ssh -k claranet@$IP
+expect {
+	"(yes/no)" { 
+		send "yes\n"
+		expect "assword:" { send "$CLARAPASS\n" }
+		}
+	"assword:" { send "$CLARAPASS\n" }
+}
+
+interact
