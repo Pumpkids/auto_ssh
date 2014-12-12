@@ -16,13 +16,13 @@ trap {
 
 set timeout -1
 set HomeDir $env(HOME)
-set Secrets "$HomeDir/scripts/tacacs.gpg"
+set Secrets "$HomeDir/scripts/secrets.gpg"
 
 set IP [lindex $argv 0 ]
 
-set CLARAPASS [ exec gpg -o - -d /home/fooker/scripts/tacacs.gpg 2> /dev/null ]
+set CLARAPASS [ exec gpg -o - -d /home/fooker/scripts/secrets.gpg 2> /dev/null | grep claranet | awk "{print \$2}" ]
 
-spawn ssh -o PubkeyAuthentication=no -k jallardice.net@$IP
+spawn ssh -o PubkeyAuthentication=no -k claranet@$IP
 expect {
 	"(yes/no)" { 
 		send "yes\n"
