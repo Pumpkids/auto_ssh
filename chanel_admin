@@ -1,0 +1,19 @@
+#!/usr/bin/expect
+#trap sigwinch and pass it to the child we spawned
+trap {
+ set rows [stty rows]
+ set cols [stty columns]
+ stty rows $rows columns $cols < $spawn_out(slave,name)
+} WINCH
+
+
+set timeout -1
+
+send "connecting to: 10.129.37.20 (frcl-ws-blg-pr1)"
+set Password [exec gpg -o - -d /home/fooker/scripts/secrets.gpg 2> /dev/null | grep claranet | awk "{print \$2}"]
+spawn ssh -k claranet@10.129.63.201
+expect "assword:" { send "$Password\n" }
+expect "hainf-pi01-mgt" { send "su -\n" }
+set Password [exec gpg -o - -d /home/fooker/scripts/secrets.gpg 2> /dev/null | grep claranet_chanel2 | awk "{print \$2}"]
+expect "assword:" { send "$Password\nsu - chaneladmin\n" }
+interact
